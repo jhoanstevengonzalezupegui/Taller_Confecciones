@@ -15,8 +15,6 @@ programa que crea la gestion de un taller de confecciones
 - Elixir (versión 1.12 o superior)
 
 
-# Taller_Confecciones
-programa que crea la gestion de un taller de confecciones
 
 
 ## Instrucciones de Compilación y Ejecución
