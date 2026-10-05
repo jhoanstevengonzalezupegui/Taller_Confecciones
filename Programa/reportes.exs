@@ -1,7 +1,7 @@
 # Integrantes
 #- Nombre jhoan steven gonzalez upegui - 1092456579
 #- Nombre santiago rico arango - 1090274268
-#- Nombre jose federico rincon ramos- FEDE PONGA SU CEDULA AQUI
+#- Nombre jose federico rincon ramos- 1092456434
 
 
 defmodule Reportes do
@@ -236,7 +236,7 @@ defmodule Reportes do
   end
 
 
-  # 8. REPORTE DE TOTALES GLOBALES Y COSTO PROMEDIO (R7 - TAREA INTEGRANTE 3)
+  # 8. REPORTE DE TOTALES GLOBALES Y COSTO PROMEDIO (R7)
 
 
   def generar_reporte_totales_y_costo_promedio(liquidaciones, lotes_validos) do
@@ -259,7 +259,7 @@ defmodule Reportes do
   end
 
 
-  # 9. REPORTE DE COBERTURA COMPLETA DE LÍNEAS (R8 - TAREA INTEGRANTE 3)
+  # 9. REPORTE DE COBERTURA COMPLETA DE LÍNEAS (R8)
 
 
   def generar_reporte_cobertura_lineas(confeccionistas, lineas, lotes_validos) do
