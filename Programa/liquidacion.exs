@@ -5,7 +5,7 @@
 
 defmodule Liquidacion do
 
-  #Parametros Constantes del negocio
+  # Parámetros Constantes del negocio
   @tarifa_base 3200
   @minimo_bonificacion 120
   @valor_bonificacion 18000
@@ -46,17 +46,21 @@ defmodule Liquidacion do
   # 6. Liquidar un confeccionista individual
   def liquidar_confeccionista(confeccionista, lotes_validos) do
     lotes = Enum.filter(lotes_validos, fn l -> l.confeccionista == confeccionista.codigo end)
-    total_prendas = Enum.sum_by(lotes, fn l -> l.prendas end)
-    bruto = Enum.sum_by(lotes, &valor_lote/1)
+
+    # Mapeo + Suma idiomático de Elixir
+    total_prendas = lotes |> Enum.map(fn l -> l.prendas end) |> Enum.sum()
+    bruto = lotes |> Enum.map(&valor_lote/1) |> Enum.sum()
 
     lotes_por_dia = Enum.group_by(lotes, fn l -> l.dia end)
-    dias_trabajados = Map.size(lotes_por_dia)
+    dias_trabajados = map_size(lotes_por_dia)
 
     bonificacion =
-      Enum.sum_by(lotes_por_dia, fn {_dia, lotes_dia} ->
-        prendas_dia = Enum.sum_by(lotes_dia, fn l -> l.prendas end)
+      lotes_por_dia
+      |> Enum.map(fn {_dia, lotes_dia} ->
+        prendas_dia = lotes_dia |> Enum.map(fn l -> l.prendas end) |> Enum.sum()
         bonificacion_diaria(prendas_dia)
       end)
+      |> Enum.sum()
 
     alquiler = descuento_alquiler(dias_trabajados, confeccionista.alquiler)
     neto = bruto + bonificacion - alquiler

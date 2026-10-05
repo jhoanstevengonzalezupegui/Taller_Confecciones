@@ -118,17 +118,19 @@ defmodule Reportes do
 
   # 4. REPORTE DE PRODUCCIÓN DIARIA Y CUMPLIMIENTO DE META
 
-  def generar_reporte_cumplimiento_meta(lotes_validos) do
-    meta_diaria = 600
+  # 4. REPORTE DE PRODUCCIÓN DIARIA Y CUMPLIMIENTO DE META
 
+  def generar_reporte_cumplimiento_meta(lotes_validos) do
     datos_dias = Enum.map(1..6, fn dia ->
       lotes_dia = Enum.filter(lotes_validos, fn lote -> lote.dia == dia end)
       lista_prendas = Enum.map(lotes_dia, fn lote -> lote.prendas end)
       total_prendas = Enum.sum(lista_prendas)
 
-      cumplio = total_prendas >= meta_diaria
+      cumplio = total_prendas >= @meta_diaria
       {dia, total_prendas, cumplio}
     end)
+
+    # ... resto del código igual ...
 
     lista_filas = Enum.map(datos_dias, fn {dia, prendas, cumplio} ->
       estado = if cumplio, do: "CUMPLIÓ META", else: "NO CUMPLIÓ META"
