@@ -3,7 +3,7 @@
 #- Nombre santiago rico arango - 1090274268
 #- Nombre jose federico rincon ramos - 1092456434
 
-# Carga de los módulos necesarios
+# Carga de los módulos del proyecto
 Code.require_file("util.exs")
 Code.require_file("datos.exs")
 Code.require_file("liquidacion.exs")
@@ -16,23 +16,31 @@ defmodule Programa do
     lineas = Datos.lineas()
     lotes_originales = Datos.lotes()
 
-    # 1. Entrada de Lote Adicional (Lectura interactiva)
+    # 1. Entrada opcional de Lote Adicional
     IO.puts("=== INGRESO DE LOTE ADICIONAL ===")
-    IO.puts("Ingrese un lote adicional (confeccionista;linea;dia;prendas;defectos) o Enter para omitir:")
+    IO.puts("Ingrese un lote adicional (confeccionista;linea;dia;prendas;defectos) o presione ENTER para omitir:")
     IO.puts("Ejemplo: C03;L2;4;85;3.5")
     entrada = IO.gets("> ") |> to_string() |> String.trim()
 
     lotes_totales = procesar_lote_adicional(entrada, lotes_originales)
 
-    # 2. Procesamiento de Validaciones y Liquidación (Ajustado al mapa de Validacion.exs)
+    # 2. Procesamiento de Validaciones y Liquidación
     %{validos: validos, rechazados: rechazados} = Validacion.procesar_lotes(lotes_totales)
     liquidaciones = Liquidacion.liquidar_todos(confeccionistas, validos)
 
-    # 3. Impresión Secuencial de los 4 Reportes del Sistema
-    IO.puts("\n" <> Reportes.generar_reporte_lotes_rechazados(rechazados))
+    # 3. Impresión Secuencial de los 8 Reportes del Sistema
+    IO.puts("\n===================================================")
+    IO.puts("        IMPRESIÓN DE REPORTES DEL SISTEMA          ")
+    IO.puts("===================================================\n")
+
+    IO.puts(Reportes.generar_reporte_lotes_rechazados(rechazados))
     IO.puts(Reportes.generar_reporte_productividad_lineas(lineas, validos))
     IO.puts(Reportes.generar_reporte_cumplimiento_meta(validos))
     IO.puts(Reportes.generar_reporte_liquidacion_semanal(liquidaciones))
+    IO.puts(Reportes.generar_reporte_lideres_diarios(confeccionistas, validos))
+    IO.puts(Reportes.generar_reporte_mejor_calidad(confeccionistas, validos))
+    IO.puts(Reportes.generar_reporte_totales_y_costo_promedio(liquidaciones, validos))
+    IO.puts(Reportes.generar_reporte_cobertura_lineas(confeccionistas, lineas, validos))
 
     # 4. Consulta de Comprobante Individual
     IO.puts("=== CONSULTA DE COMPROBANTE INDIVIDUAL ===")
@@ -44,7 +52,6 @@ defmodule Programa do
   defp procesar_lote_adicional("", lotes), do: lotes
 
   defp procesar_lote_adicional(texto, lotes) do
-    # Se reemplaza la expresión regular por String.split(texto) para evitar el error de #Reference
     partes = if String.contains?(texto, ";"), do: String.split(texto, ";"), else: String.split(texto)
     partes_limpias = Enum.map(partes, &String.trim/1)
 
@@ -53,16 +60,16 @@ defmodule Programa do
         case {Integer.parse(dia_str), Integer.parse(prendas_str), Float.parse(def_str)} do
           {{dia, ""}, {prendas, ""}, {defectos, ""}} ->
             lote_nuevo = %{confeccionista: conf, linea: lin, dia: dia, prendas: prendas, defectos: defectos}
-            IO.puts("-> Lote adicional registrado correctamente.")
+            IO.puts("-> Lote adicional registrado correctamente.\n")
             lotes ++ [lote_nuevo]
 
           _ ->
-            IO.puts("-> Error: Los valores numéricos del lote adicional no son válidos.")
+            IO.puts("-> Error: Los valores numéricos del lote adicional no son válidos.\n")
             lotes
         end
 
       _ ->
-        IO.puts("-> Error: El formato del lote adicional es inválido (debe tener exactamente 5 campos).")
+        IO.puts("-> Error: El formato del lote adicional es inválido.\n")
         lotes
     end
   end
@@ -92,5 +99,5 @@ defmodule Programa do
   end
 end
 
-# Ejecución automática al llamar el archivo
+# Ejecución del programa
 Programa.main()

@@ -47,7 +47,6 @@ defmodule Reportes do
       No se registraron lotes rechazados durante la semana.
       """
     else
-      # Detalle uno por uno
       lista_detalles = Enum.map(rechazados, fn {:error, motivo, lote} ->
         "• Día #{lote.dia} | Confeccionista: #{lote.confeccionista} | Línea: #{lote.linea} -> Motivo: #{motivo}"
       end)
@@ -103,6 +102,10 @@ defmodule Reportes do
     # Ordenar por productividad de mayor a menor
     lineas_ordenadas = Enum.sort_by(datos_lineas, fn item -> item.productividad end, :desc)
 
+
+
+
+
     filas = Enum.map(lineas_ordenadas, fn item ->
       prod_fmt = :erlang.float_to_binary(item.productividad * 1.0, [decimals: 2])
       "• Línea #{item.id} (#{item.nombre}): #{item.prendas} prendas | #{item.puestos} puestos | Productividad: #{prod_fmt} prendas/puesto"
@@ -116,7 +119,6 @@ defmodule Reportes do
   end
 
 
-  # 4. REPORTE DE PRODUCCIÓN DIARIA Y CUMPLIMIENTO DE META
 
   # 4. REPORTE DE PRODUCCIÓN DIARIA Y CUMPLIMIENTO DE META
 
@@ -130,7 +132,6 @@ defmodule Reportes do
       {dia, total_prendas, cumplio}
     end)
 
-    # ... resto del código igual ...
 
     lista_filas = Enum.map(datos_dias, fn {dia, prendas, cumplio} ->
       estado = if cumplio, do: "CUMPLIÓ META", else: "NO CUMPLIÓ META"
@@ -177,7 +178,7 @@ defmodule Reportes do
   end
 
    # 6. REPORTE DE MAYOR PRODUCTOR DIARIO (R5)
-  
+
 
   def generar_reporte_lideres_diarios(confeccionistas, lotes_validos) do
     filas = Enum.map(1..6, fn dia ->
@@ -203,9 +204,9 @@ defmodule Reportes do
     """
   end
 
-  
+
   # 7. REPORTE DE MEJOR CALIDAD PONDERADA (R6)
-  
+
 
   def generar_reporte_mejor_calidad(confeccionistas, lotes_validos) do
     candidatos = Enum.filter(confeccionistas, fn c ->

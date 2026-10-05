@@ -18,7 +18,6 @@ defmodule Validacion do
       end)
       |> Enum.map(fn {:ok, lote} -> lote end)
 
-    # Mantiene la tupla {:error, motivo, lote} exacta que exige Reportes.exs
     rechazados =
       Enum.filter(resultados, fn
         {:error, _motivo, _lote} -> true
@@ -29,7 +28,7 @@ defmodule Validacion do
   end
 
   @doc """
-  Valida un único lote aplicando el bloque `with` sobre las 5 reglas de negocio.
+  Valida un único lote con wl wiht
   """
   def validar_lote(%{confeccionista: conf, linea: lin, dia: d, prendas: p, defectos: defs} = lote) do
     with :ok <- validar_confeccionista(conf),
@@ -48,8 +47,7 @@ defmodule Validacion do
   end
 
   # =========================================================================
-  # REGLAS DE NEGOCIO PRIVADAS (defp + guardas + Enum.any?)
-  # =========================================================================
+  # REGLAS DE NEGOCIO PRIVADAS
 
   # Regla 1: Confeccionista existente en Datos.confeccionistas()
   defp validar_confeccionista(codigo) when is_binary(codigo) do
