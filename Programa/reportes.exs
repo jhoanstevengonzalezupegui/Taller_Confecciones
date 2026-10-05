@@ -1,7 +1,7 @@
 # Integrantes
 #- Nombre jhoan steven gonzalez upegui - 1092456579
 #- Nombre santiago rico arango - 1090274268
-#- Nombre jose federico rincon ramos- FEDE PONGA SU CEDULA AQUI
+#- Nombre jose federico rincon ramos- 1092456434
 
 
 defmodule Reportes do
@@ -173,6 +173,120 @@ defmodule Reportes do
     """
     === REPORTE DE LIQUIDACIÓN SEMANAL DE CONFECCIONISTAS ===
     #{filas_texto}
+    """
+  end
+
+   # 6. REPORTE DE MAYOR PRODUCTOR DIARIO (R5)
+  
+
+  def generar_reporte_lideres_diarios(confeccionistas, lotes_validos) do
+    filas = Enum.map(1..6, fn dia ->
+      lotes_dia = Enum.filter(lotes_validos, fn l -> l.dia == dia end)
+      if Enum.empty?(lotes_dia) do
+        "• Día #{dia}: Sin lotes válidos."
+      else
+        por_conf = Enum.group_by(lotes_dia, fn l -> l.confeccionista end)
+        totales = Enum.map(por_conf, fn {cod, lotes} ->
+          conf = Enum.find(confeccionistas, fn c -> c.codigo == cod end)
+          {conf.nombre, Enum.sum(Enum.map(lotes, fn l -> l.prendas end))}
+        end)
+        max_prendas = elem(Enum.max_by(totales, fn {_nom, p} -> p end), 1)
+        ganadores = Enum.filter(totales, fn {_nom, p} -> p == max_prendas end)
+        nombres = Enum.map_join(ganadores, ", ", fn {nom, _p} -> nom end)
+        "• Día #{dia}: #{nombres} (#{max_prendas} prendas)"
+      end
+    end)
+
+    """
+    === REPORTE DE MAYOR PRODUCTOR DIARIO ===
+    #{Enum.join(filas, "\n")}
+    """
+  end
+
+  
+  # 7. REPORTE DE MEJOR CALIDAD PONDERADA (R6)
+  
+
+  def generar_reporte_mejor_calidad(confeccionistas, lotes_validos) do
+    candidatos = Enum.filter(confeccionistas, fn c ->
+      length(Enum.filter(lotes_validos, fn l -> l.confeccionista == c.codigo end)) >= 3
+    end)
+
+    if Enum.empty?(candidatos) do
+      """
+      === REPORTE DE MEJOR CALIDAD (PORCENTAJE PONDERADO) ===
+      Ningún confeccionista cumple con el mínimo de 3 lotes válidos.
+      """
+    else
+      evaluacion = Enum.map(candidatos, fn c ->
+        lotes = Enum.filter(lotes_validos, fn l -> l.confeccionista == c.codigo end)
+        total_prendas = Enum.sum(Enum.map(lotes, fn l -> l.prendas end))
+        suma_defectos = Enum.sum(Enum.map(lotes, fn l -> l.defectos * l.prendas end))
+        ponderado = suma_defectos / total_prendas
+        {c, ponderado}
+      end)
+
+      {mejor, porcentaje} = Enum.min_by(evaluacion, fn {_c, pond} -> pond end)
+      fmt = :erlang.float_to_binary(porcentaje, [decimals: 2])
+
+      """
+      === REPORTE DE MEJOR CALIDAD (PORCENTAJE PONDERADO) ===
+      • Confeccionista con mejor calidad: [#{mejor.codigo}] #{mejor.nombre}
+      • Porcentaje ponderado de defectos: #{fmt}%
+      """
+    end
+  end
+
+
+  # 8. REPORTE DE TOTALES GLOBALES Y COSTO PROMEDIO (R7)
+
+
+  def generar_reporte_totales_y_costo_promedio(liquidaciones, lotes_validos) do
+    total_pagado = Enum.sum(Enum.map(liquidaciones, fn l -> l.neto end))
+    total_prendas = Enum.sum(Enum.map(lotes_validos, fn l -> l.prendas end))
+
+    promedio_str =
+      if total_prendas > 0 do
+        Util.formato_moneda(total_pagado / total_prendas)
+      else
+        "No se puede calcular (0 prendas válidas)"
+      end
+
+    """
+    === REPORTE DE TOTALES GLOBALES Y COSTO PROMEDIO ===
+    • Total acumulado a pagar por el taller: #{Util.formato_moneda(total_pagado)}
+    • Total de prendas válidas elaboradas: #{total_prendas}
+    • Costo promedio pagado por prenda válida: #{promedio_str}
+    """
+  end
+
+
+  # 9. REPORTE DE COBERTURA COMPLETA DE LÍNEAS (R8)
+
+
+  def generar_reporte_cobertura_lineas(confeccionistas, lineas, lotes_validos) do
+    total_lineas = length(lineas)
+
+    cumplen = Enum.filter(confeccionistas, fn c ->
+      lineas_trabajadas =
+        lotes_validos
+        |> Enum.filter(fn l -> l.confeccionista == c.codigo end)
+        |> Enum.map(fn l -> l.linea end)
+        |> Enum.uniq()
+
+      length(lineas_trabajadas) == total_lineas
+    end)
+
+    texto =
+      if Enum.empty?(cumplen) do
+        "Ningún confeccionista elaboró lotes en todas las líneas de producción."
+      else
+        Enum.map_join(cumplen, "\n", fn c -> "• [#{c.codigo}] #{c.nombre}" end)
+      end
+
+    """
+    === REPORTE DE COBERTURA COMPLETA DE LÍNEAS ===
+    #{texto}
     """
   end
 
