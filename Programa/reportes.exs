@@ -1,16 +1,21 @@
-# Integrantes
-#- Nombre jhoan steven gonzalez upegui - 1092456579
-#- Nombre santiago rico arango - 1090274268
-#- Nombre jose federico rincon ramos- 1092456434
-
+# Integrantes:
+# - Jhoan Steven González Upegui - 1092456579
+# - Santiago Rico Arango - 1090274268
+# - José Federico Rincón Ramos - 1092456434
 
 defmodule Reportes do
+  @moduledoc """
+  Módulo encargado de la consolidación, ordenamiento y generación visual
+  de los 8 reportes del sistema para el Taller de Confecciones.
+  """
 
   # Constante para la meta diaria del Reporte 3
   @meta_diaria 600
 
-  # 1. RANKING Y ORDENAMIENTO DE LIQUIDACIONES (INVESTIGACIÓN C.1)
-
+  @doc """
+  Ordena y filtra la lista de liquidaciones según las opciones especificadas.
+  Opciones disponibles.
+  """
   def ranking(liquidaciones, opts \\ []) do
     campo = Keyword.get(opts, :campo, :neto)
     orden = Keyword.get(opts, :orden, :desc)
@@ -38,8 +43,10 @@ defmodule Reportes do
     end
   end
 
-  # 2. REPORTE DE LOTES RECHAZADOS Y MOTIVOS DE FALLA
-
+  @doc """
+  Genera el reporte impreso con el detalle de los lotes rechazados por validación
+  y el conteo total agrupado por motivo de rechazo.
+  """
   def generar_reporte_lotes_rechazados(rechazados) do
     if Enum.empty?(rechazados) do
       """
@@ -71,9 +78,10 @@ defmodule Reportes do
     end
   end
 
-
-  # 3. REPORTE DE PRODUCCIÓN Y PRODUCTIVIDAD POR LÍNEA
-
+  @doc """
+  Genera el reporte de producción total y productividad promedio por puesto
+  para cada línea de producción, ordenado de mayor a menor productividad.
+  """
   def generar_reporte_productividad_lineas(lineas, lotes_validos) do
     # Calcular prendas y productividad de cada línea
     datos_lineas = Enum.map(lineas, fn linea ->
@@ -102,10 +110,6 @@ defmodule Reportes do
     # Ordenar por productividad de mayor a menor
     lineas_ordenadas = Enum.sort_by(datos_lineas, fn item -> item.productividad end, :desc)
 
-
-
-
-
     filas = Enum.map(lineas_ordenadas, fn item ->
       prod_fmt = :erlang.float_to_binary(item.productividad * 1.0, [decimals: 2])
       "• Línea #{item.id} (#{item.nombre}): #{item.prendas} prendas | #{item.puestos} puestos | Productividad: #{prod_fmt} prendas/puesto"
@@ -118,10 +122,10 @@ defmodule Reportes do
     """
   end
 
-
-
-  # 4. REPORTE DE PRODUCCIÓN DIARIA Y CUMPLIMIENTO DE META
-
+  @doc """
+  Genera el reporte de evaluación de cumplimiento de la meta diaria de producción (600 prendas),
+  indicando los resultados por día y las métricas globales con Enum.all? y Enum.any?.
+  """
   def generar_reporte_cumplimiento_meta(lotes_validos) do
     datos_dias = Enum.map(1..6, fn dia ->
       lotes_dia = Enum.filter(lotes_validos, fn lote -> lote.dia == dia end)
@@ -131,7 +135,6 @@ defmodule Reportes do
       cumplio = total_prendas >= @meta_diaria
       {dia, total_prendas, cumplio}
     end)
-
 
     lista_filas = Enum.map(datos_dias, fn {dia, prendas, cumplio} ->
       estado = if cumplio, do: "CUMPLIÓ META", else: "NO CUMPLIÓ META"
@@ -154,8 +157,10 @@ defmodule Reportes do
     """
   end
 
-  # 5. REPORTE DE LIQUIDACIÓN SEMANAL DE CONFECCIONISTAS
-
+  @doc """
+  Genera el reporte de la liquidación semanal consolidada de todos los confeccionistas
+  ordenados descendentemente por el pago neto final.
+  """
   def generar_reporte_liquidacion_semanal(liquidaciones) do
     liquidaciones_ordenadas = ranking(liquidaciones, campo: :neto, orden: :desc)
 
@@ -177,9 +182,10 @@ defmodule Reportes do
     """
   end
 
-   # 6. REPORTE DE MAYOR PRODUCTOR DIARIO (R5)
-
-
+  @doc """
+  Genera el reporte de los confeccionistas líderes en producción para cada uno
+  de los días de la semana (1 a 6).
+  """
   def generar_reporte_lideres_diarios(confeccionistas, lotes_validos) do
     filas = Enum.map(1..6, fn dia ->
       lotes_dia = Enum.filter(lotes_validos, fn l -> l.dia == dia end)
@@ -204,10 +210,10 @@ defmodule Reportes do
     """
   end
 
-
-  # 7. REPORTE DE MEJOR CALIDAD PONDERADA (R6)
-
-
+  @doc """
+  Genera el reporte de mejor calidad evaluando el porcentaje ponderado de defectos
+  entre aquellos confeccionistas que cuentan con al menos 3 lotes válidos.
+  """
   def generar_reporte_mejor_calidad(confeccionistas, lotes_validos) do
     candidatos = Enum.filter(confeccionistas, fn c ->
       length(Enum.filter(lotes_validos, fn l -> l.confeccionista == c.codigo end)) >= 3
@@ -238,10 +244,10 @@ defmodule Reportes do
     end
   end
 
-
-  # 8. REPORTE DE TOTALES GLOBALES Y COSTO PROMEDIO (R7)
-
-
+  @doc """
+  Genera el reporte con los totales globales pagados por el taller, la cantidad total
+  de prendas válidas elaboradas y el costo promedio por prenda válida.
+  """
   def generar_reporte_totales_y_costo_promedio(liquidaciones, lotes_validos) do
     total_pagado = Enum.sum(Enum.map(liquidaciones, fn l -> l.neto end))
     total_prendas = Enum.sum(Enum.map(lotes_validos, fn l -> l.prendas end))
@@ -261,10 +267,10 @@ defmodule Reportes do
     """
   end
 
-
-  # 9. REPORTE DE COBERTURA COMPLETA DE LÍNEAS (R8)
-
-
+  @doc """
+  Genera el reporte que identifica los confeccionistas que registraron al menos
+  un lote en cada una de las líneas de producción del taller.
+  """
   def generar_reporte_cobertura_lineas(confeccionistas, lineas, lotes_validos) do
     total_lineas = length(lineas)
 
@@ -290,5 +296,4 @@ defmodule Reportes do
     #{texto}
     """
   end
-
 end

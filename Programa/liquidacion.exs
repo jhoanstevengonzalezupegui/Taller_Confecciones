@@ -1,23 +1,33 @@
-# Integrantes
-#- Nombre jhoan steven gonzalez upegui - 1092456579
-#- Nombre santiago rico arango - 1090274268
-#- Nombre jose federico rincon ramos-1092456434
-
+# Integrantes:
+# - Jhoan Steven González Upegui - 1092456579
+# - Santiago Rico Arango - 1090274268
+# - José Federico Rincón Ramos - 1092456434
 
 defmodule Liquidacion do
+  @moduledoc """
+  Módulo encargado del cálculo financiero y la liquidación de nómina de confeccionistas.
+  Aplica las tarifas base por prenda, factores de ajuste por porcentaje de defectos,
+  bonificaciones por productividad diaria y descuentos por alquiler de maquinaria.
+  """
 
-  # Parámetros Constantes del negocio
+  # Parámetros constantes del negocio
   @tarifa_base 3200
   @minimo_bonificacion 120
   @valor_bonificacion 18000
   @valor_alquiler 15000
 
-  # 1. Valor base de un lote ($3.200 por prenda)
+  @doc """
+  Calcula el valor base bruto de un lote multiplicando la cantidad de prendas
+  por la tarifa base ($3.200).
+  """
   def valor_base_lote(prendas) when is_integer(prendas) and prendas > 0 do
     prendas * @tarifa_base
   end
 
-  # 2. Factor de ajuste según el % de defectos
+  @doc """
+  Determina el factor multiplicador de ajuste según el porcentaje de defectos
+  registrado en el lote.
+  """
   def ajuste_defectos(defectos) when is_number(defectos) do
     cond do
       defectos <= 2.0 -> 1.07
@@ -27,28 +37,42 @@ defmodule Liquidacion do
     end
   end
 
-  # 3. Valor económico final ajustado de un lote
+  @doc """
+  Calcula el valor económico final ajustado de un lote individual combinando
+  su valor base con el factor de ajuste por defectos.
+  """
   def valor_lote(lote) when is_map(lote) do
     base = valor_base_lote(lote.prendas)
     factor = ajuste_defectos(lote.defectos)
     base * factor
   end
 
-  # 4. Bonificación diaria por productividad (>= 120 prendas)
+  @doc """
+  Evalúa la producción acumulada de un día y retorna la bonificación ($18.000)
+  si alcanza o supera el mínimo requerido (120 prendas).
+  """
   def bonificacion_diaria(prendas_dia) when is_integer(prendas_dia) do
     if prendas_dia >= @minimo_bonificacion, do: @valor_bonificacion, else: 0
   end
 
-  # 5. Descuento por alquiler de maquinaria ($15.000 por día trabajado)
+  @doc """
+  Calcula el valor total del descuento por alquiler de maquinaria ($15.000 por
+  día trabajado) en caso de que el confeccionista aplique para dicho cobro.
+  """
   def descuento_alquiler(dias_trabajados, tiene_alquiler) do
     if tiene_alquiler, do: dias_trabajados * @valor_alquiler, else: 0
   end
 
-  # 6. Liquidar un confeccionista individual
+  @doc """
+  Procesa y consolida la liquidación individual de un confeccionista a partir
+  de la lista total de lotes válidos.
+  Retorna un mapa con el resumen de prendas, total bruto, bonificaciones,
+  descuento de alquiler y neto a pagar.
+  """
   def liquidar_confeccionista(confeccionista, lotes_validos) do
     lotes = Enum.filter(lotes_validos, fn l -> l.confeccionista == confeccionista.codigo end)
 
-    # Mapeo + Suma idiomático de Elixir
+    # Mapeo y suma idiomática de Elixir
     total_prendas = lotes |> Enum.map(fn l -> l.prendas end) |> Enum.sum()
     bruto = lotes |> Enum.map(&valor_lote/1) |> Enum.sum()
 
@@ -79,7 +103,10 @@ defmodule Liquidacion do
     }
   end
 
-  # 7. Liquidar a todos los confeccionistas registrados
+  @doc """
+  Genera la lista completa de liquidaciones finales iterando sobre la totalidad
+  de confeccionistas registrados.
+  """
   def liquidar_todos(confeccionistas, lotes_validos) do
     Enum.map(confeccionistas, fn c -> liquidar_confeccionista(c, lotes_validos) end)
   end

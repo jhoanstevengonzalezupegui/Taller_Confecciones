@@ -1,11 +1,18 @@
-# Integrantes
-#- Nombre jhoan steven gonzalez upegui - 1092456579
-#- Nombre santiago rico arango - 1090274268
-#- Nombre jose federico rincon ramos- 1092456434
+# Integrantes:
+# - Jhoan Steven González Upegui - 1092456579
+# - Santiago Rico Arango - 1090274268
+# - José Federico Rincón Ramos - 1092456434
+
 defmodule Validacion do
+  @moduledoc """
+  Módulo de validación y control de calidad de lotes de confección.
+  Aplica las reglas de negocio sobre la existencia de confeccionistas y líneas,
+  así como los rangos permitidos para días, prendas y porcentajes de defectos.
+  """
+
   @doc """
-  Filtra y clasifica los lotes en válidos y rechazados.
-  Devuelve un mapa %{validos: [...], rechazados: [...]}
+  Filtra y clasifica una lista de lotes en válidos y rechazados.
+  Devuelve un mapa con la estructura `%{validos: [...], rechazados: [...]}`.
   """
   def procesar_lotes(lotes) when is_list(lotes) do
     resultados = Enum.map(lotes, &validar_lote/1)
@@ -28,7 +35,8 @@ defmodule Validacion do
   end
 
   @doc """
-  Valida un único lote con wl wiht
+  Valida un único lote evaluando sus reglas de negocio mediante la sintaxis `with`.
+  Retorna `{:ok, lote}` si cumple todos los criterios o `{:error, motivo, lote}` en caso contrario.
   """
   def validar_lote(%{confeccionista: conf, linea: lin, dia: d, prendas: p, defectos: defs} = lote) do
     with :ok <- validar_confeccionista(conf),
@@ -48,6 +56,7 @@ defmodule Validacion do
 
   # =========================================================================
   # REGLAS DE NEGOCIO PRIVADAS
+  # =========================================================================
 
   # Regla 1: Confeccionista existente en Datos.confeccionistas()
   defp validar_confeccionista(codigo) when is_binary(codigo) do

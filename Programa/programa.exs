@@ -1,7 +1,7 @@
-# Integrantes
-#- Nombre jhoan steven gonzalez upegui - 1092456579
-#- Nombre santiago rico arango - 1090274268
-#- Nombre jose federico rincon ramos - 1092456434
+# Integrantes:
+# - Jhoan Steven González Upegui - 1092456579
+# - Santiago Rico Arango - 1090274268
+# - José Federico Rincón Ramos - 1092456434
 
 # Carga de los módulos del proyecto
 Code.require_file("util.exs")
@@ -11,6 +11,18 @@ Code.require_file("reportes.exs")
 Code.require_file("validacion.exs")
 
 defmodule Programa do
+  @moduledoc """
+  Módulo principal de entrada y orquestación del programa del Taller de Confecciones.
+  Gestiona la lectura interactiva del lote adicional, coordina el flujo de
+  validaciones y liquidaciones, imprime los 8 reportes del sistema y genera
+  el comprobante individual de pago.
+  """
+
+  @doc """
+  Punto de entrada principal de la aplicación.
+  Ejecuta de forma secuencial la captura de datos, procesamiento de reglas de negocio,
+  generación de reportes y consulta final de comprobantes.
+  """
   def main do
     confeccionistas = Datos.confeccionistas()
     lineas = Datos.lineas()
@@ -30,7 +42,7 @@ defmodule Programa do
 
     # 3. Impresión Secuencial de los 8 Reportes del Sistema
     IO.puts("\n===================================================")
-    IO.puts("        IMPRESIÓN DE REPORTES DEL SISTEMA          ")
+    IO.puts("         IMPRESIÓN DE REPORTES DEL SISTEMA          ")
     IO.puts("===================================================\n")
 
     IO.puts(Reportes.generar_reporte_lotes_rechazados(rechazados))
@@ -48,6 +60,10 @@ defmodule Programa do
     cod_consulta = IO.gets("") |> to_string() |> String.trim()
     mostrar_comprobante(cod_consulta, confeccionistas, validos)
   end
+
+  # =========================================================================
+  # FUNCIONES PRIVADAS
+  # =========================================================================
 
   defp procesar_lote_adicional("", lotes), do: lotes
 

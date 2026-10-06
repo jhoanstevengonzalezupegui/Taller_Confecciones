@@ -1,16 +1,16 @@
-# Integrantes
-#- Nombre jhoan steven gonzalez upegui - 1092456579
-#- Nombre santiago rico arango - 1090274268
-#- Nombre jose federico rincon ramos- 1092456434
-
+# Integrantes:
+# - Jhoan Steven González Upegui - 1092456579
+# - Santiago Rico Arango - 1090274268
+# - José Federico Rincón Ramos - 1092456434
 
 defmodule Util do
+  @moduledoc """
+  Módulo de utilidades auxiliares y funciones puras para el Taller de Confecciones.
+  Provee parseo seguro de datos numéricos y formateo de montos en moneda local ($).
+  """
 
-
-  #Funciones Puras
   @doc """
-  Convierte un texto o un entero a entero de forma segura.
-
+  Convierte un texto o entero a un resultado estructurado `{:ok, entero}` o `{:error, :entero_invalido}`.
   """
   def parse_entero(texto) when is_binary(texto) do
     case Integer.parse(String.trim(texto)) do
@@ -23,10 +23,7 @@ defmodule Util do
   def parse_entero(_otro), do: {:error, :entero_invalido}
 
   @doc """
-  Convierte un texto, entero o flotante a flotante de forma segura.
-
-
-
+  Convierte un texto, entero o flotante a un resultado estructurado `{:ok, flotante}` o `{:error, :flotante_invalido}`.
   """
   def parse_flotante(texto) when is_binary(texto) do
     case Float.parse(String.trim(texto)) do
@@ -39,10 +36,8 @@ defmodule Util do
   def parse_flotante(_otro), do: {:error, :flotante_invalido}
 
   @doc """
-  Formatea un monto como moneda: signo pesos, puntos de miles y coma decimal,
-  siempre con dos decimales y sin notación científica.
-
-  
+  Formatea un monto numérico como moneda ($): incluye signo de pesos, punto
+  como separador de miles y coma para los dos dígitos decimales.
   """
   def formato_moneda(monto) when is_number(monto) do
     centavos = round(abs(monto) * 100)
@@ -52,6 +47,10 @@ defmodule Util do
 
     "#{signo}$#{con_separador_de_miles(enteros)},#{decimales}"
   end
+
+  # =========================================================================
+  # FUNCIONES PRIVADAS
+  # =========================================================================
 
   defp con_separador_de_miles(entero) do
     entero
